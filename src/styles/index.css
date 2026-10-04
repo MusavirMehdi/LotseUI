@@ -1,0 +1,266 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg-base: #fafafa;
+  --surface-card: #ffffff;
+  --surface-elevated: #f4f4f5;
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.16);
+  --text-primary: #09090b;
+  --text-secondary: #52525b;
+  --text-muted: #71717a;
+  --accent-brand: #2563eb;
+  --accent-glow: rgba(37, 99, 235, 0.12);
+
+  /* Animated background palette - light mode (0.4 to 0.5 opacity) */
+  --blob-blue: rgba(147, 197, 253, 0.50);
+  --blob-cyan: rgba(153, 246, 228, 0.45);
+  --blob-violet: rgba(221, 214, 254, 0.48);
+  --blob-warm: rgba(254, 215, 170, 0.38);
+}
+
+.dark {
+  --bg-base: #09090b;
+  --surface-card: #121215;
+  --surface-elevated: #27272a;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --accent-brand: #3b82f6;
+  --accent-glow: rgba(59, 130, 246, 0.18);
+
+  /* Animated background palette - dark mode (0.35 to 0.45 opacity) */
+  --blob-blue: rgba(59, 130, 246, 0.45);
+  --blob-cyan: rgba(20, 184, 166, 0.38);
+  --blob-violet: rgba(139, 92, 246, 0.40);
+  --blob-warm: rgba(245, 158, 11, 0.32);
+}
+
+@theme {
+  --color-bg-base: var(--bg-base);
+  --color-surface-card: var(--surface-card);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent-brand: var(--accent-brand);
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+}
+
+html {
+  scroll-behavior: smooth;
+  color: var(--text-primary);
+}
+
+/* Ensure sections target properly under floating navbar */
+section[id] {
+  scroll-margin-top: 100px;
+}
+
+/* Custom scrollbar matching Visuvate aesthetic */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* --- Custom Cursor Global Suppression --- */
+html.custom-cursor-active,
+html.custom-cursor-active *,
+html.custom-cursor-active a,
+html.custom-cursor-active button,
+html.custom-cursor-active [role="button"],
+html.custom-cursor-active [data-cursor="hover"] {
+  cursor: none !important;
+}
+
+html.custom-cursor-active input,
+html.custom-cursor-active textarea,
+html.custom-cursor-active [contenteditable="true"],
+html.custom-cursor-active [contenteditable=""] {
+  cursor: text !important;
+}
+
+/* --- Animated Screen Frame Border --- */
+@property --border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes rotate-border-angle {
+  0% {
+    --border-angle: 0deg;
+  }
+  100% {
+    --border-angle: 360deg;
+  }
+}
+
+.screen-border-animated {
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0%,
+    transparent 60%,
+    rgba(37, 99, 235, 0.25) 75%,
+    #2563eb 90%,
+    #38bdf8 100%
+  );
+  animation: rotate-border-angle 7s linear infinite;
+}
+
+.dark .screen-border-animated {
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0%,
+    transparent 60%,
+    rgba(125, 211, 252, 0.25) 75%,
+    #38bdf8 90%,
+    #7dd3fc 100%
+  );
+}
+
+.screen-border-glow {
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0%,
+    transparent 65%,
+    rgba(37, 99, 235, 0.35) 80%,
+    rgba(56, 189, 248, 0.75) 100%
+  );
+  animation: rotate-border-angle 7s linear infinite;
+  filter: blur(12px);
+}
+
+.dark .screen-border-glow {
+  background: conic-gradient(
+    from var(--border-angle, 0deg),
+    transparent 0%,
+    transparent 65%,
+    rgba(56, 189, 248, 0.3) 80%,
+    rgba(125, 211, 252, 0.8) 100%
+  );
+}
+
+/* --- Architecture Flow Dash Animation --- */
+@keyframes flow-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.animate-flow-dash {
+  animation: flow-dash 1.2s linear infinite;
+}
+
+/* --- Animated Background Drifting Blobs --- */
+@keyframes drift-blob-1 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(80px, -60px, 0) scale(1.08); }
+  50% { transform: translate3d(140px, 50px, 0) scale(0.95); }
+  75% { transform: translate3d(-60px, 90px, 0) scale(1.04); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes drift-blob-2 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(-100px, 70px, 0) scale(0.94); }
+  50% { transform: translate3d(-70px, -80px, 0) scale(1.07); }
+  75% { transform: translate3d(80px, -40px, 0) scale(0.98); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes drift-blob-3 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(90px, 80px, 0) scale(1.06); }
+  66% { transform: translate3d(-80px, -60px, 0) scale(0.93); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes drift-blob-4 {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(-80px, 60px, 0) scale(0.95); }
+  66% { transform: translate3d(70px, -70px, 0) scale(1.05); }
+  100% { transform: translate3d(0, 0, 0) scale(1); }
+}
+
+/* Color cycling keyframes across CSS variables (30 to 60s) */
+@keyframes cycle-palette-1 {
+  0%, 100% { background-color: var(--blob-blue); }
+  33% { background-color: var(--blob-cyan); }
+  66% { background-color: var(--blob-violet); }
+}
+
+@keyframes cycle-palette-2 {
+  0%, 100% { background-color: var(--blob-cyan); }
+  33% { background-color: var(--blob-violet); }
+  66% { background-color: var(--blob-warm); }
+}
+
+@keyframes cycle-palette-3 {
+  0%, 100% { background-color: var(--blob-violet); }
+  33% { background-color: var(--blob-warm); }
+  66% { background-color: var(--blob-blue); }
+}
+
+@keyframes cycle-palette-4 {
+  0%, 100% { background-color: var(--blob-warm); }
+  33% { background-color: var(--blob-blue); }
+  66% { background-color: var(--blob-cyan); }
+}
+
+.blob-1 {
+  animation: drift-blob-1 26s ease-in-out infinite, cycle-palette-1 42s ease-in-out infinite;
+  will-change: transform;
+}
+
+.blob-2 {
+  animation: drift-blob-2 34s ease-in-out infinite -6s, cycle-palette-2 50s ease-in-out infinite -10s;
+  will-change: transform;
+}
+
+.blob-3 {
+  animation: drift-blob-3 40s ease-in-out infinite -12s, cycle-palette-3 48s ease-in-out infinite -15s;
+  will-change: transform;
+}
+
+.blob-4 {
+  animation: drift-blob-4 28s ease-in-out infinite -8s, cycle-palette-4 56s ease-in-out infinite -20s;
+  will-change: transform;
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .blob-1,
+  .blob-2,
+  .blob-3,
+  .blob-4 {
+    animation: none !important;
+    transform: none !important;
+  }
+  .screen-border-animated,
+  .screen-border-glow {
+    animation: none !important;
+    background: rgba(56, 189, 248, 0.4) !important;
+  }
+}

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LOTSE — Your Future in Germany. One Guided Pathway.</title>
+    <meta name="description" content="Navigate education, training and career opportunities in Germany with LOTSE, an AI pathway assistant that understands your profile and checks eligibility." />
+
+    <!-- Inline script to prevent FOUT (Flash of Unstyled Theme) -->
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('lotse_theme');
+          var theme = (saved === 'dark' || saved === 'light') ? saved : 'light';
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {
+          document.documentElement.classList.remove('dark');
+        }
+      })();
+    </script>
+
+    <!-- Google Fonts: Plus Jakarta Sans, Instrument Serif, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-transparent text-[var(--text-primary)] min-h-screen font-sans antialiased selection:bg-[#3b82f6] selection:text-white transition-colors duration-200">
+    <div id="root" class="min-h-screen bg-transparent"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
