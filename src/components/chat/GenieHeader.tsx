@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 export interface GenieHeaderProps {
   mode?: 'mini' | 'full';
+  statusText?: string;
   className?: string;
   onOpenMobileMenu?: () => void;
   onBackToSite?: () => void;
@@ -12,6 +13,7 @@ export interface GenieHeaderProps {
 
 export const GenieHeader: React.FC<GenieHeaderProps> = ({
   mode = 'mini',
+  statusText = 'Online',
   className = '',
   onOpenMobileMenu,
   onBackToSite,
@@ -53,16 +55,16 @@ export const GenieHeader: React.FC<GenieHeaderProps> = ({
           <span className="font-semibold text-xs sm:text-sm tracking-tight text-zinc-900 dark:text-white">
             LOTSE GENIE
           </span>
-          {/* Online status dot with a gentle pulse */}
+          {/* Status dot with a gentle pulse */}
           <span
-            className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-[10px] font-medium text-emerald-600 dark:text-emerald-400"
-            title="Online"
+            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/20 text-[10px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400"
+            title={statusText}
           >
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
             </span>
-            <span>Online</span>
+            <span>{statusText}</span>
           </span>
         </div>
       </div>

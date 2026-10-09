@@ -40,7 +40,7 @@ export const ScreenFrame: React.FC<ScreenFrameProps> = ({ children, className = 
         ease: [0.16, 1, 0.3, 1] as const,
       }}
       style={{ scale: shouldReduceMotion ? 1 : scale }}
-      className={`relative w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-center px-2 sm:px-4 ${className}`}
+      className={`relative w-[94vw] max-w-[1360px] mx-auto flex flex-col items-center px-1 sm:px-2 ${className}`}
     >
       {/* Outer Monitor Housing with Animated Light Border */}
       <div className="relative w-full rounded-2xl sm:rounded-3xl p-[2px] transition-all duration-300">
@@ -79,12 +79,12 @@ export const ScreenFrame: React.FC<ScreenFrameProps> = ({ children, className = 
             </div>
           </div>
 
-          {/* Screen Display Canvas */}
-          <div className="relative min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] bg-zinc-950 text-zinc-100 flex flex-col justify-center items-center p-6 sm:p-10">
+          {/* Screen Display Canvas: Taller display area (~680px desktop, 70vh mobile) */}
+          <div className="relative w-full h-[70vh] min-h-[520px] sm:h-[640px] lg:h-[680px] xl:h-[700px] bg-[var(--surface-card)] text-[var(--text-primary)] flex flex-col overflow-hidden">
             {children ? (
               children
             ) : (
-              <div className="flex flex-col items-center justify-center text-center p-8 sm:p-12 rounded-2xl border border-white/5 bg-white/[0.02] max-w-md">
+              <div className="flex-1 flex flex-col items-center justify-center text-center p-8 sm:p-12">
                 <div className="w-10 h-10 rounded-full bg-blue-500/10 text-blue-400 flex items-center justify-center mb-3.5 border border-blue-500/20">
                   <span className="relative flex h-2.5 w-2.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
@@ -92,10 +92,10 @@ export const ScreenFrame: React.FC<ScreenFrameProps> = ({ children, className = 
                   </span>
                 </div>
                 <p className="text-sm sm:text-base font-medium text-zinc-200">
-                  LOTSE GENIE loads here (Stage 4)
+                  LOTSE GENIE Start State
                 </p>
                 <p className="text-xs sm:text-sm text-zinc-500 mt-1.5 leading-relaxed">
-                  Interactive pathway chat gateway with eligibility verification
+                  Interactive pathway gateway with eligibility verification
                 </p>
               </div>
             )}

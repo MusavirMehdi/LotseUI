@@ -15,6 +15,11 @@ export interface TransitionRect {
   borderRadius?: string;
 }
 
+export interface StartSessionAction {
+  kind: 'goal' | 'text' | 'upload';
+  value?: string;
+}
+
 export interface ChatContextType {
   messages: ChatMessage[];
   welcomePlayed: boolean;
@@ -22,8 +27,11 @@ export interface ChatContextType {
   isTyping: boolean;
   transitionRect: TransitionRect | null;
   isFullScreenMounted: boolean;
+  pendingStartAction: StartSessionAction | null;
   triggerWelcomeMessage: () => void;
   sendUserMessage: (text: string) => void;
+  startSession: (action: StartSessionAction) => void;
+  consumePendingStartAction: () => StartSessionAction | null;
   startTransition: (rect?: TransitionRect | null) => void;
   endTransition: () => void;
   markFullScreenMounted: () => void;
@@ -36,6 +44,7 @@ What brings you to Germany?`;
 
 const STORAGE_KEY_MESSAGES = 'lotse_chat_messages';
 const STORAGE_KEY_WELCOME = 'lotse_chat_welcome_played';
+const STORAGE_KEY_PENDING_ACTION = 'lotse_pending_start_action';
 
 const loadMessagesFromStorage = (): ChatMessage[] => {
   try {
@@ -69,6 +78,25 @@ const loadWelcomePlayedFromStorage = (): boolean => {
   }
 };
 
+const loadPendingActionFromStorage = (): StartSessionAction | null => {
+  try {
+    if (typeof window === 'undefined') return null;
+    const raw = window.sessionStorage.getItem(STORAGE_KEY_PENDING_ACTION);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      parsed &&
+      typeof parsed === 'object' &&
+      (parsed.kind === 'goal' || parsed.kind === 'text' || parsed.kind === 'upload')
+    ) {
+      return parsed as StartSessionAction;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 const saveMessagesToStorage = (messages: ChatMessage[]) => {
   try {
     if (typeof window !== 'undefined') {
@@ -89,11 +117,26 @@ const saveWelcomePlayedToStorage = (played: boolean) => {
   }
 };
 
+const savePendingActionToStorage = (action: StartSessionAction | null) => {
+  try {
+    if (typeof window !== 'undefined') {
+      if (action) {
+        window.sessionStorage.setItem(STORAGE_KEY_PENDING_ACTION, JSON.stringify(action));
+      } else {
+        window.sessionStorage.removeItem(STORAGE_KEY_PENDING_ACTION);
+      }
+    }
+  } catch {
+    // Ignore storage write issues
+  }
+};
+
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
 export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [messages, setMessages] = useState<ChatMessage[]>(loadMessagesFromStorage);
   const [welcomePlayed, setWelcomePlayed] = useState<boolean>(loadWelcomePlayedFromStorage);
+  const [pendingStartAction, setPendingStartAction] = useState<StartSessionAction | null>(loadPendingActionFromStorage);
   const [isTransitioning, setIsTransitioning] = useState<boolean>(false);
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [transitionRect, setTransitionRect] = useState<TransitionRect | null>(null);
@@ -174,6 +217,25 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setMessages((prev) => [...prev, userMsg]);
   }, []);
 
+  const startSession = useCallback((action: StartSessionAction) => {
+    setPendingStartAction(action);
+    savePendingActionToStorage(action);
+    setWelcomePlayed(true);
+    saveWelcomePlayedToStorage(true);
+  }, []);
+
+  const consumePendingStartAction = useCallback((): StartSessionAction | null => {
+    let action = pendingStartAction;
+    if (!action) {
+      action = loadPendingActionFromStorage();
+    }
+    if (action) {
+      setPendingStartAction(null);
+      savePendingActionToStorage(null);
+    }
+    return action;
+  }, [pendingStartAction]);
+
   const startTransition = useCallback((rect?: TransitionRect | null) => {
     setTransitionRect(rect || null);
     setIsFullScreenMounted(false);
@@ -200,6 +262,8 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsTyping(false);
     setTransitionRect(null);
     setIsFullScreenMounted(false);
+    setPendingStartAction(null);
+    savePendingActionToStorage(null);
     if (typeof document !== 'undefined') {
       document.body.style.overflow = '';
     }
@@ -207,6 +271,7 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (typeof window !== 'undefined') {
         window.sessionStorage.removeItem(STORAGE_KEY_MESSAGES);
         window.sessionStorage.removeItem(STORAGE_KEY_WELCOME);
+        window.sessionStorage.removeItem(STORAGE_KEY_PENDING_ACTION);
       }
     } catch {
       // Ignore
@@ -222,8 +287,11 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isTyping,
         transitionRect,
         isFullScreenMounted,
+        pendingStartAction,
         triggerWelcomeMessage,
         sendUserMessage,
+        startSession,
+        consumePendingStartAction,
         startTransition,
         endTransition,
         markFullScreenMounted,

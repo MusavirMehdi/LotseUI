@@ -33,7 +33,7 @@ export const Hero: React.FC = () => {
     <section
       id="hero"
       aria-label="Introduction to LOTSE"
-      className="relative flex flex-col justify-center items-center pt-24 sm:pt-28 pb-6 sm:pb-8 px-4 sm:px-6 lg:px-8"
+      className="relative flex flex-col justify-center items-center pt-24 sm:pt-28 lg:pt-32 pb-8 sm:pb-12 lg:pb-28 xl:pb-32 px-4 sm:px-6 lg:px-8"
     >
       <motion.div
         variants={containerVariants}

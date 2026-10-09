@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
-import { GenieChatWindow } from './GenieChatWindow';
+import { GenieStart } from './GenieStart';
 
 /**
  * TransitionOverlay
@@ -123,7 +123,7 @@ export const TransitionOverlay: React.FC = () => {
       }}
       className="bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border-subtle)] shadow-2xl flex flex-col"
     >
-      <GenieChatWindow mode="full" className="w-full h-full" />
+      <GenieStart isOverlay className="w-full h-full" />
     </motion.div>
   );
 };

@@ -10,6 +10,8 @@ export const FullScreenChat: React.FC = () => {
     messages,
     welcomePlayed,
     triggerWelcomeMessage,
+    sendUserMessage,
+    consumePendingStartAction,
     resetChat,
     markFullScreenMounted,
   } = useChat();
@@ -23,12 +25,29 @@ export const FullScreenChat: React.FC = () => {
     markFullScreenMounted();
   }, [markFullScreenMounted]);
 
-  // Direct visit to /chat with no messages: trigger welcome message immediately (no scroll gating)
+  // Check for pending start action from landing page, or trigger welcome on direct visit
   useEffect(() => {
-    if (!welcomePlayed) {
+    const pending = consumePendingStartAction();
+    if (pending) {
+      let userText = '';
+      if (pending.kind === 'goal') {
+        userText = `I want to: ${pending.value || 'Study'}`;
+      } else if (pending.kind === 'upload') {
+        userText = pending.value
+          ? (pending.value.startsWith('Upload') ? pending.value : `Uploaded document: ${pending.value}`)
+          : 'Uploaded document for evaluation';
+      } else if (pending.kind === 'text') {
+        userText = pending.value || '';
+      }
+
+      if (userText.trim()) {
+        sendUserMessage(userText.trim());
+      }
+    } else if (!welcomePlayed && messages.length === 0) {
+      // Direct visit to /chat with no messages: trigger welcome message immediately (no scroll gating)
       triggerWelcomeMessage();
     }
-  }, [welcomePlayed, triggerWelcomeMessage]);
+  }, [consumePendingStartAction, sendUserMessage, welcomePlayed, messages.length, triggerWelcomeMessage]);
 
   // Handle Escape key to close mobile drawer
   useEffect(() => {

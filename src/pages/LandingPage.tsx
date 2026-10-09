@@ -3,7 +3,7 @@ import { Navbar } from '../components/layout/Navbar';
 import { AnimatedBackground } from '../components/layout/AnimatedBackground';
 import { Hero } from '../components/sections/Hero';
 import { ScreenFrame } from '../components/chat/ScreenFrame';
-import { GenieShowcase } from '../components/chat/GenieShowcase';
+import { GenieStart } from '../components/chat/GenieStart';
 import { ThreeTrackOptions } from '../components/sections/ThreeTrackOptions';
 import { Features } from '../components/sections/Features';
 import { Architecture } from '../components/sections/Architecture';
@@ -28,11 +28,11 @@ export const LandingPage: React.FC = () => {
           <section
             id="showcase"
             aria-label="LOTSE GENIE Showcase"
-            className="w-full mx-auto my-0 px-2 sm:px-6 lg:px-8 text-center bg-transparent scroll-mt-20"
+            className="w-full mx-auto my-0 px-2 sm:px-6 lg:px-8 text-center bg-transparent scroll-mt-20 sm:scroll-mt-24"
           >
-            {/* Mini Computer Screen Frame with Animated Light-Blue Border */}
+            {/* Enlarged Monitor Screen Frame with Animated Light-Blue Border */}
             <ScreenFrame>
-              <GenieShowcase />
+              <GenieStart />
             </ScreenFrame>
 
             {/* Heading & Subtext placed below monitor base, before Three Track Options */}
