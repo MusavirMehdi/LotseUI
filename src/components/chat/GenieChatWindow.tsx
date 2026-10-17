@@ -1,11 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'motion/react';
-import { Sparkles, Info } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useChat } from '../../hooks/useChat';
 import { GenieHeader } from './GenieHeader';
 import { GenieMessage } from './GenieMessage';
 import { GenieInput } from './GenieInput';
+import { AgentActivityIndicator } from './AgentActivityIndicator';
+import { FileUploadModal } from './FileUploadModal';
 
 export interface GenieChatWindowProps {
   mode?: 'mini' | 'full';
@@ -13,6 +15,7 @@ export interface GenieChatWindowProps {
   onOpenMobileMenu?: () => void;
   onBackToSite?: () => void;
   showBackToSite?: boolean;
+  onRetry?: () => void;
 }
 
 export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
@@ -21,14 +24,27 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
   onOpenMobileMenu,
   onBackToSite,
   showBackToSite = false,
+  onRetry,
 }) => {
   const {
     messages,
-    welcomePlayed,
     isTyping,
+    isAgentRunning,
+    currentAgentReason,
+    currentIteration,
+    currentToolName,
+    pendingQuestion,
+    activePathway,
     sendUserMessage,
+    sendAnswer,
+    sendUpload,
+    resolveConflict,
+    stopCurrentTurn,
     startTransition,
+    retryLastAction,
   } = useChat();
+
+  const handleRetry = onRetry || retryLastAction;
 
   const navigate = useNavigate();
   const windowRef = useRef<HTMLDivElement>(null);
@@ -36,6 +52,8 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
   const prevMessagesLengthRef = useRef(messages.length);
   const isFirstMountRef = useRef(true);
   const shouldReduceMotion = useReducedMotion();
+
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 
   // Auto-scroll message container ONLY when a new message is added, never on first mount or page-level
   useEffect(() => {
@@ -57,11 +75,7 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
     }
   }, [messages.length, shouldReduceMotion]);
 
-  const isEmpty = messages.length === 0 && !isTyping;
-  const isInputDisabled = messages.length === 0 && !welcomePlayed;
-
-  // First user message index to anchor the single system note
-  const firstUserMessageIndex = messages.findIndex((m) => m.sender === 'user');
+  const isEmpty = messages.length === 0 && !isTyping && !isAgentRunning;
 
   const handleSendMessage = (text: string) => {
     const hasUserMessages = messages.some((m) => m.sender === 'user');
@@ -104,8 +118,12 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
       return;
     }
 
-    // Normal submission (full mode or subsequent mini submissions)
+    // Normal submission
     sendUserMessage(text);
+  };
+
+  const handleUploadSuccess = (uploadId: string, fileName: string, kind: string) => {
+    sendUpload(uploadId, fileName, kind);
   };
 
   return (
@@ -123,6 +141,14 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
         onOpenMobileMenu={onOpenMobileMenu}
         onBackToSite={onBackToSite}
         showBackToSite={showBackToSite}
+        activePathway={activePathway}
+        statusText={
+          isAgentRunning
+            ? 'Thinking...'
+            : pendingQuestion
+              ? 'Awaiting Answer'
+              : 'Connected'
+        }
       />
 
       {/* 2. Scrollable Message List */}
@@ -147,19 +173,14 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
           </div>
         ) : (
           <>
-            {messages.map((message, index) => (
-              <React.Fragment key={message.id}>
-                <GenieMessage message={message} />
-                {/* One small, clearly labelled system note under the first user message */}
-                {index === firstUserMessageIndex && (
-                  <div className="flex justify-center my-3 sm:my-4 select-none">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-zinc-600 dark:text-zinc-400 text-[11px] sm:text-xs max-w-sm text-center leading-snug">
-                      <Info className="w-3.5 h-3.5 text-blue-500 shrink-0" />
-                      <span>Demo mode: LOTSE GENIE&apos;s replies will appear here once the AI service is connected.</span>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
+            {messages.map((message) => (
+              <GenieMessage
+                key={message.id}
+                message={message}
+                onAnswer={sendAnswer}
+                onResolveConflict={resolveConflict}
+                onRetry={handleRetry}
+              />
             ))}
 
             {isTyping && (
@@ -177,15 +198,36 @@ export const GenieChatWindow: React.FC<GenieChatWindowProps> = ({
         )}
       </div>
 
-      {/* 3. Input */}
+      {/* 3. Live Agent Activity Indicator */}
+      {isAgentRunning && (
+        <div className="px-4">
+          <AgentActivityIndicator
+            isRunning={isAgentRunning}
+            currentReason={currentAgentReason}
+            iteration={currentIteration}
+            toolName={currentToolName}
+            onStop={stopCurrentTurn}
+          />
+        </div>
+      )}
+
+      {/* 4. Input */}
       <GenieInput
         onSubmit={handleSendMessage}
-        disabled={isInputDisabled}
+        onOpenUpload={() => setIsUploadModalOpen(true)}
+        disabled={isAgentRunning}
         placeholder={
-          isInputDisabled
-            ? 'Say hello to start...'
+          isAgentRunning
+            ? 'LOTSE GENIE is evaluating requirements...'
             : 'Ask LOTSE GENIE about studying, jobs, or visas...'
         }
+      />
+
+      {/* Document Upload Modal */}
+      <FileUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
       />
     </div>
   );

@@ -4,12 +4,14 @@ import { LandingPage } from './pages/LandingPage';
 import { ChatPage } from './pages/ChatPage';
 import { CustomCursor } from './components/layout/CustomCursor';
 import { TransitionOverlay } from './components/chat/TransitionOverlay';
+import { AuthModal } from './components/auth/AuthModal';
 
 export const App: React.FC = () => {
   return (
     <>
       <CustomCursor />
       <TransitionOverlay />
+      <AuthModal />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/chat" element={<ChatPage />} />

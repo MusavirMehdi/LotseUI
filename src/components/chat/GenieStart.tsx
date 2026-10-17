@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useChat } from '../../hooks/useChat';
 import { GenieHeader } from './GenieHeader';
+import { FileUploadModal } from './FileUploadModal';
 import type { StartSessionAction } from '../../context/ChatContext';
 
 export interface GenieStartProps {
@@ -21,13 +22,35 @@ export const GenieStart: React.FC<GenieStartProps> = ({
   className = '',
   isOverlay = false,
 }) => {
-  const { startSession, startTransition } = useChat();
+  const { startSession, startTransition, activePathway, isGoalPending, lastTurnFailed } = useChat();
   const navigate = useNavigate();
   const containerRef = useRef<HTMLDivElement>(null);
   const [inputValue, setInputValue] = useState('');
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isPending = isOverlay || isSubmitting || isGoalPending;
 
   const handleStart = (action: StartSessionAction) => {
-    if (isOverlay) return;
+    if (isPending) return;
+
+    // Check if the requested pathway is already active (and last turn did not fail)
+    if (action.kind === 'goal' && action.value) {
+      const normalizedGoal =
+        action.value.toLowerCase().includes('training') || action.value.toLowerCase().includes('ausbildung')
+          ? 'training'
+          : action.value.toLowerCase().includes('work')
+            ? 'work'
+            : 'study';
+
+      if (activePathway === normalizedGoal && !lastTurnFailed) {
+        // Pathway already active: navigate to chat without creating duplicate goal event or turn
+        navigate('/chat');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
 
     // Persist pending start action in ChatProvider & sessionStorage
     startSession(action);
@@ -70,6 +93,16 @@ export const GenieStart: React.FC<GenieStartProps> = ({
     handleStart({ kind: 'text', value: trimmed });
   };
 
+  const handleUploadSuccess = (uploadId: string, fileName: string, kind: string) => {
+    handleStart({
+      kind: 'upload',
+      uploadId,
+      fileName,
+      documentKind: kind,
+      value: `Uploaded document: ${fileName} (${kind})`,
+    });
+  };
+
   return (
     <div
       ref={containerRef}
@@ -92,16 +125,22 @@ export const GenieStart: React.FC<GenieStartProps> = ({
           {/* Option 1: Study */}
           <button
             type="button"
+            data-pathway="study"
             data-cursor="hover"
-            disabled={isOverlay}
+            disabled={isPending}
             onClick={() => handleStart({ kind: 'goal', value: 'Study' })}
-            className="group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none"
+            className={`group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none cursor-pointer ${
+              isPending ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
             <div className="w-12 h-12 rounded-xl bg-blue-500/10 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-3.5 border border-blue-500/20 group-hover:scale-105 transition-transform duration-200">
               <GraduationCap className="w-6 h-6" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white">
+            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white flex items-center gap-1.5">
               Study
+              {activePathway === 'study' && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-600 dark:text-blue-400 font-normal">Active</span>
+              )}
             </span>
             <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">
               Bachelors, Masters &amp; prep courses
@@ -111,16 +150,22 @@ export const GenieStart: React.FC<GenieStartProps> = ({
           {/* Option 2: Vocational training */}
           <button
             type="button"
+            data-pathway="training"
             data-cursor="hover"
-            disabled={isOverlay}
+            disabled={isPending}
             onClick={() => handleStart({ kind: 'goal', value: 'Vocational training' })}
-            className="group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none"
+            className={`group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none cursor-pointer ${
+              isPending ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
             <div className="w-12 h-12 rounded-xl bg-indigo-500/10 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3.5 border border-indigo-500/20 group-hover:scale-105 transition-transform duration-200">
               <Briefcase className="w-6 h-6" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white">
+            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white flex items-center gap-1.5">
               Vocational training
+              {activePathway === 'training' && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 font-normal">Active</span>
+              )}
             </span>
             <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">
               Duale Ausbildung &amp; paid apprenticeships
@@ -130,16 +175,22 @@ export const GenieStart: React.FC<GenieStartProps> = ({
           {/* Option 3: Work */}
           <button
             type="button"
+            data-pathway="work"
             data-cursor="hover"
-            disabled={isOverlay}
+            disabled={isPending}
             onClick={() => handleStart({ kind: 'goal', value: 'Work' })}
-            className="group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none"
+            className={`group relative flex flex-col items-center text-center p-5 sm:p-6 rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/90 hover:border-blue-500/40 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:pointer-events-none cursor-pointer ${
+              isPending ? 'opacity-60 cursor-not-allowed' : ''
+            }`}
           >
             <div className="w-12 h-12 rounded-xl bg-sky-500/10 dark:bg-sky-500/15 text-sky-600 dark:text-sky-400 flex items-center justify-center mb-3.5 border border-sky-500/20 group-hover:scale-105 transition-transform duration-200">
               <Building2 className="w-6 h-6" />
             </div>
-            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white">
+            <span className="text-base sm:text-lg font-semibold text-zinc-950 dark:text-white flex items-center gap-1.5">
               Work
+              {activePathway === 'work' && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-400 font-normal">Active</span>
+              )}
             </span>
             <span className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">
               Skilled employment &amp; Opportunity Card
@@ -158,15 +209,15 @@ export const GenieStart: React.FC<GenieStartProps> = ({
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              disabled={isOverlay}
+              disabled={isPending}
               placeholder="Or tell me in your own words..."
               className="w-full pl-4 pr-12 py-3 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-elevated)] text-zinc-950 dark:text-white placeholder:text-zinc-400 dark:placeholder:text-zinc-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all disabled:opacity-50"
             />
             <button
               type="submit"
-              disabled={isOverlay || !inputValue.trim()}
+              disabled={isPending || !inputValue.trim()}
               aria-label="Send message"
-              className="absolute right-1.5 p-2 rounded-full bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="absolute right-1.5 p-2 rounded-full bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-40 disabled:hover:bg-blue-600 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
             >
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -176,9 +227,9 @@ export const GenieStart: React.FC<GenieStartProps> = ({
           <button
             type="button"
             data-cursor="hover"
-            disabled={isOverlay}
-            onClick={() => handleStart({ kind: 'upload', value: 'Document uploaded' })}
-            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/80 hover:border-blue-500/40 text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0 disabled:pointer-events-none"
+            disabled={isPending}
+            onClick={() => setIsUploadModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full border border-[var(--border-subtle)] bg-[var(--surface-elevated)] hover:bg-[var(--surface-elevated)]/80 hover:border-blue-500/40 text-xs sm:text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 shrink-0 disabled:pointer-events-none cursor-pointer"
           >
             <Upload className="w-4 h-4 text-blue-500" />
             <span>Upload a document</span>
@@ -193,6 +244,12 @@ export const GenieStart: React.FC<GenieStartProps> = ({
           </span>
         </div>
       </div>
+
+      <FileUploadModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadSuccess={handleUploadSuccess}
+      />
     </div>
   );
 };

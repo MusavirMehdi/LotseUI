@@ -31,12 +31,18 @@ export const TransitionOverlay: React.FC = () => {
     if (isTransitioning) {
       document.body.style.overflow = 'hidden';
 
+      // Ensure navigation executes reliably even if Framer Motion onAnimationComplete is delayed
+      const navTimer = window.setTimeout(() => {
+        navigate('/chat');
+      }, 550);
+
       safetyTimeoutRef.current = window.setTimeout(() => {
         document.body.style.overflow = '';
         endTransition();
       }, 2500);
 
       return () => {
+        clearTimeout(navTimer);
         if (safetyTimeoutRef.current) {
           clearTimeout(safetyTimeoutRef.current);
         }
@@ -46,7 +52,7 @@ export const TransitionOverlay: React.FC = () => {
       document.body.style.overflow = '';
       setIsFadingOut(false);
     }
-  }, [isTransitioning, endTransition]);
+  }, [isTransitioning, endTransition, navigate]);
 
   // When FullScreenChat has mounted at /chat, trigger smooth fade out
   useEffect(() => {

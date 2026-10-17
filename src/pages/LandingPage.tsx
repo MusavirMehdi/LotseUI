@@ -4,11 +4,15 @@ import { AnimatedBackground } from '../components/layout/AnimatedBackground';
 import { Hero } from '../components/sections/Hero';
 import { ScreenFrame } from '../components/chat/ScreenFrame';
 import { GenieStart } from '../components/chat/GenieStart';
+import { ContinueChatCard } from '../components/chat/ContinueChatCard';
 import { ThreeTrackOptions } from '../components/sections/ThreeTrackOptions';
 import { Features } from '../components/sections/Features';
 import { Architecture } from '../components/sections/Architecture';
+import { useChat } from '../hooks/useChat';
 
 export const LandingPage: React.FC = () => {
+  const { hasStarted } = useChat();
+
   return (
     <div className="relative min-h-screen bg-transparent text-[var(--text-primary)] transition-colors duration-200 selection:bg-blue-500 selection:text-white">
       {/* Fixed Ambient Background with Drifting Color-Cycling Blobs & Base Color */}
@@ -32,7 +36,7 @@ export const LandingPage: React.FC = () => {
           >
             {/* Enlarged Monitor Screen Frame with Animated Light-Blue Border */}
             <ScreenFrame>
-              <GenieStart />
+              {hasStarted ? <ContinueChatCard /> : <GenieStart />}
             </ScreenFrame>
 
             {/* Heading & Subtext placed below monitor base, before Three Track Options */}

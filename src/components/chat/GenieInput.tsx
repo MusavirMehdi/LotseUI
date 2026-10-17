@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ArrowUp } from 'lucide-react';
+import { ArrowUp, Paperclip } from 'lucide-react';
 
 export interface GenieInputProps {
   onSubmit: (text: string) => void;
+  onOpenUpload?: () => void;
   disabled?: boolean;
   placeholder?: string;
   className?: string;
@@ -10,6 +11,7 @@ export interface GenieInputProps {
 
 export const GenieInput: React.FC<GenieInputProps> = ({
   onSubmit,
+  onOpenUpload,
   disabled = false,
   placeholder = 'Ask LOTSE GENIE about studying, Ausbildung, or work...',
   className = '',
@@ -41,6 +43,19 @@ export const GenieInput: React.FC<GenieInputProps> = ({
       onSubmit={handleSubmit}
       className={`relative flex items-center gap-2 p-2.5 sm:p-3 border-t border-black/5 dark:border-white/5 bg-zinc-50/80 dark:bg-zinc-950/60 backdrop-blur-sm shrink-0 ${className}`}
     >
+      {onOpenUpload && (
+        <button
+          type="button"
+          onClick={onOpenUpload}
+          disabled={disabled}
+          title="Upload document for verification"
+          aria-label="Upload document"
+          className="p-2 sm:p-2.5 rounded-xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/5 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-500/40 transition-colors disabled:opacity-40 cursor-pointer shrink-0"
+        >
+          <Paperclip className="w-4 h-4" />
+        </button>
+      )}
+
       <input
         type="text"
         value={value}
@@ -55,7 +70,7 @@ export const GenieInput: React.FC<GenieInputProps> = ({
         type="submit"
         disabled={!canSubmit}
         aria-label="Send message"
-        className="p-2 sm:p-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95 disabled:opacity-30 disabled:pointer-events-none disabled:active:scale-100 transition-all shadow-xs flex items-center justify-center shrink-0"
+        className="p-2 sm:p-2.5 rounded-xl bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 active:scale-95 disabled:opacity-30 disabled:pointer-events-none disabled:active:scale-100 transition-all shadow-xs flex items-center justify-center shrink-0 cursor-pointer"
       >
         <ArrowUp className="w-4 h-4" />
       </button>

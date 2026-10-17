@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { X, Sun, Moon } from 'lucide-react';
+import { X, Sun, Moon, LogIn, LogOut } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface MobileMenuProps {
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, navLinks }) => {
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
 
   // Close on Escape key
   useEffect(() => {
@@ -52,7 +54,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, navLink
         <button
           onClick={onClose}
           aria-label="Close menu"
-          className="p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-blue-500"
+          className="p-2 rounded-full border border-white/10 bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-colors focus-visible:outline-2 focus-visible:outline-blue-500 cursor-pointer"
         >
           <X className="w-5 h-5" />
         </button>
@@ -87,7 +89,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, navLink
           <button
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-sm text-zinc-300 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-500"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-sm text-zinc-300 hover:text-white focus-visible:outline-2 focus-visible:outline-blue-500 cursor-pointer"
           >
             {theme === 'dark' ? (
               <>
@@ -103,12 +105,32 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose, navLink
           </button>
         </div>
 
-        <button
-          onClick={onClose}
-          className="w-full py-3 rounded-full bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors focus-visible:outline-2 focus-visible:outline-blue-500"
-        >
-          Sign in
-        </button>
+        {isAuthenticated && user ? (
+          <div className="flex items-center justify-between pt-2">
+            <span className="text-xs text-zinc-400 truncate max-w-[180px]">{user.email}</span>
+            <button
+              onClick={() => {
+                logout();
+                onClose();
+              }}
+              className="px-4 py-2 rounded-full border border-white/15 bg-white/5 text-xs text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign out</span>
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => {
+              onClose();
+              openAuthModal('login');
+            }}
+            className="w-full py-3 rounded-full bg-white text-black font-medium text-sm hover:bg-zinc-200 transition-colors focus-visible:outline-2 focus-visible:outline-blue-500 flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <LogIn className="w-4 h-4" />
+            <span>Sign in</span>
+          </button>
+        )}
       </div>
     </div>
   );

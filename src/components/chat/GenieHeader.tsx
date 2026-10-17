@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 export interface GenieHeaderProps {
   mode?: 'mini' | 'full';
   statusText?: string;
+  activePathway?: 'study' | 'training' | 'work' | null;
   className?: string;
   onOpenMobileMenu?: () => void;
   onBackToSite?: () => void;
@@ -14,6 +15,7 @@ export interface GenieHeaderProps {
 export const GenieHeader: React.FC<GenieHeaderProps> = ({
   mode = 'mini',
   statusText = 'Online',
+  activePathway,
   className = '',
   onOpenMobileMenu,
   onBackToSite,
@@ -66,6 +68,11 @@ export const GenieHeader: React.FC<GenieHeaderProps> = ({
             </span>
             <span>{statusText}</span>
           </span>
+          {activePathway && (
+            <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full bg-blue-500/10 dark:bg-blue-500/15 border border-blue-500/20 text-[10px] font-medium text-blue-600 dark:text-blue-400 capitalize">
+              {activePathway === 'training' ? 'Ausbildung Track' : `${activePathway} Track`}
+            </span>
+          )}
         </div>
       </div>
 
